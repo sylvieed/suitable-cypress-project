@@ -60,7 +60,8 @@ describe("New Transaction", function () {
     cy.getBySelLike("personal-tab").click().should("have.class", "Mui-selected");
 
     cy.getBySelLike("transaction-item").should("contain", request.description);
-    cy.visualSnapshot("Transaction Item Description in List");
+    cy.getBySelLike("transaction-item").should("contain", "requested");
+    cy.visualSnapshot("Transaction Item Request Description in List");
   });
 
   it("displays new transaction errors", function () {
@@ -189,7 +190,47 @@ describe("New Transaction", function () {
   });
 
   it("navigates to the new transaction form, selects a user and submits a transaction payment", function () {
-    // The following line is meant to fail the test on purpose. You can remove it and update accordingly
-    cy.get("#fail-on-purpose").should("exist");
+    const request = {
+      amount: "12",
+      description: "Cafe!",
+    };
+    const originalBalance = ctx.user!.balance;
+
+    // Submit a new transaction payment
+    cy.getBySelLike("new-transaction").click();
+    cy.wait("@allUsers");
+
+    cy.getBySelLike("user-list-item").contains(ctx.contact!.firstName).click({ force: true });
+    cy.visualSnapshot("User Search First Name Input");
+
+    cy.getBySelLike("amount-input").type(request.amount);
+    cy.getBySelLike("description-input").type(request.description);
+    cy.visualSnapshot("Amount and Description Input");
+    cy.getBySelLike("submit-payment").click();
+    cy.wait("@createTransaction");
+    cy.getBySel("alert-bar-success")
+      .should("be.visible")
+      .and("have.text", "Transaction Submitted!");
+    cy.visualSnapshot("Transaction Payment Submitted Notification");
+
+    // The new transaction should be listed
+    cy.getBySelLike("return-to-transactions").click();
+    cy.getBySelLike("personal-tab").click().should("have.class", "Mui-selected");
+
+    cy.getBySelLike("transaction-item").should("contain", request.description);
+    cy.getBySelLike("transaction-item").should("contain", "paid");
+    cy.visualSnapshot("Transaction Item Payment Description in List");
+
+    // The sender's account balance should be updated accordingly
+    const transactionAmount = parseInt(request.amount) * 100; // Balances are in cents
+    const updatedBalance = Dinero({
+      amount: originalBalance - transactionAmount,
+    }).toFormat();
+   
+    if (isMobile()) {
+      cy.getBySel("sidenav-toggle").click();
+    }
+    cy.getBySelLike("user-balance").should("contain", updatedBalance);
+    cy.visualSnapshot("Verify Updated Account Balance");
   });
 });
