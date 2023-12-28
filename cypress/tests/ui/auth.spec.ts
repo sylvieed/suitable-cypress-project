@@ -112,7 +112,48 @@ describe("User Sign-up and Login", function () {
   });
 
   it("should allow a visitor to sign-up, login, and logout", function () {
-    // The following line is meant to fail the test on purpose. You can remove it and update accordingly
-    cy.get("#fail-on-purpose").should("exist");
+    // Sign up
+    cy.intercept("GET", "/signup");
+    cy.visit("/signup");
+
+    cy.getBySel("signup-first-name").type("First");
+    cy.getBySel("signup-last-name").type("Last");
+    cy.getBySel("signup-username").type("NewUser");
+    cy.getBySel("signup-password").type("password");
+    cy.getBySel("signup-confirmPassword").type("password");
+    cy.visualSnapshot("Valid Sign Up");
+
+    cy.getBySel("signup-submit").click();
+
+    // Log in
+    cy.location("pathname").should("equal", "/signin");
+    
+    cy.getBySel("signin-username").type("NewUser");
+    cy.getBySel("signin-password").type("password");
+    cy.visualSnapshot("Valid Sign In");
+
+    cy.getBySel("signin-submit").click();
+    cy.location("pathname").should("equal", "/");
+
+    // Onboarding
+    cy.getBySel("user-onboarding-next").click();
+
+    cy.getBySel("bankaccount-bankName-input").type("MyBank");
+    cy.getBySel("bankaccount-routingNumber-input").type("123456789");
+    cy.getBySel("bankaccount-accountNumber-input").type("987654321");
+    cy.visualSnapshot("Valid Bank Account Creation");
+
+    cy.getBySel("bankaccount-submit").click();
+    cy.getBySel("user-onboarding-next").click();
+    cy.visualSnapshot("Completed Onboarding");
+    
+    // Log out
+    if (isMobile()) {
+      cy.getBySel("sidenav-toggle").click();
+    }
+    cy.getBySel("sidenav-signout").click();
+
+    cy.location("pathname").should("equal", "/signin");
+    cy.visualSnapshot("Logged Out & Redirected to SignIn");
   });
 });
