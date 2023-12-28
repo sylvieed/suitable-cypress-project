@@ -1,3 +1,13 @@
+## Sylvie's Notes
+
+### Logout in First Test Case 
+
+It seems that logging out always causes a `500` error (from `Error: req#logout requires a callback function`), in the test case I added and in pre-existing test cases. This does not cause any issues with the tests, they still pass. However, it might be better if this _did_ cause my test to fail, as the user sees the `500` error after logout, which is unexpected even though the user is successfully logged out. I left the test case to pass, but in a real application, we might want it to fail -- and then we would fix the `500` error to make it pass.
+
+### Second Test Case
+
+The second test case, sending a payment transaction, is very similar to the first existing test case in `new-transaction.spec.ts`, which sends a request transaction. Because of this, I re-used the majority of the test's code for consistency. I added a check in both of these test cases for wording of 'paid' vs. 'requested'. Because sending a payment instantly decreases the user's balance (while sending a request does not), I also tested that the balance decreases as expected.
+
 # Front End Development Project
 This project is designed to exercise your web development skills, specifically focusing on Javascript and testing application code using a tool called [Cypress](https://www.cypress.io/). The goal of this project is to install a web application on your machine and write end-to-end tests that cover the outlined test cases below.
 
